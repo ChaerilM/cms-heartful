@@ -4,9 +4,10 @@ FROM node:18
 # Set the working directory
 WORKDIR /app
 
+# Copy the package files first to leverage Docker's cache
+COPY package.json package-lock.json ./
+
 # Install dependencies
-COPY package.json .
-COPY package-lock.json .
 RUN npm install
 
 # Copy the rest of the application code
