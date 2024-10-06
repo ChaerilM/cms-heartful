@@ -1,9 +1,47 @@
 services:
-  nodejs_app:
+  cms:
     build:
       context: .
       dockerfile: Dockerfile
+    extra_hosts:
+        - 'host.docker.internal:host-gateway'
     ports:
       - "8000:8000"
+    networks:
+        - heartful
     volumes:
       - .:/app
+    depends_on:
+      - mysql
+
+  mysql:
+    image: 'mysql/mysql-server:8.0'
+    ports:
+        - '3306:3306'
+    environment:
+        MYSQL_ROOT_PASSWORD: 'password'
+        MYSQL_ROOT_HOST: '%'
+        MYSQL_DATABASE: 'laravel'
+        MYSQL_USER: 'sail'
+        MYSQL_PASSWORD: 'password'
+        MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+        - 'cms-mysql:/var/lib/mysql'
+    networks:
+        - heartful
+    healthcheck:
+        test:
+            - CMD
+            - mysqladmin
+            - ping
+            - '-ppassword'
+        retries: 3
+        timeout: 5s
+
+networks:
+  heartful:
+    driver: bridge
+
+volumes:
+    cms-mysql:
+        driver: local
